@@ -1,12 +1,22 @@
-import 'package:chatbot/views/home_page.dart';
-import 'package:flutter/material.dart';
+import  'package:flutter/material.dart';
+import 'package:chatbot/views/chatbot.dart';
+import 'package:chatbot/views/home.dart';
+import 'package:chatbot/route.dart';
 
-void main() {
-  runApp(MaterialApp(
-    debugShowCheckedModeBanner: false,
-    theme: ThemeData(
-      primarySwatch: Colors.purple
-    ),
-    home: HomePage(),
-  ));
+void main() => runApp(MyApp());
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Zomma English',
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('줌마영어'),
+        ),
+        body: HomeDisplay(),
+      ),
+      routes: routes,
+    );
+  }
 }
