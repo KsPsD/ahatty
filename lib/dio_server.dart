@@ -1,17 +1,17 @@
 import 'package:dio/dio.dart';
 
-const _API_PREFIX = 'http://4f5686f5c147.ngrok.io/prediction';
+const _API_PREFIX = 'http://220.67.127.160:5000/prediction';
 
 class Server {
 
-  Future<String> postReq(String query) async {
+  Future<dynamic> postReq(String query) async {
     Response response;
     Dio dio = new Dio();
     Map<String, dynamic> data ={"text":query};
 //    data.putIfAbsent("userId", () => 189);
     response = await dio.post(_API_PREFIX, data: data);
-
-    return response.data.toString();
+//    print(response.toString());
+    return response.toString();
   }
 }
 

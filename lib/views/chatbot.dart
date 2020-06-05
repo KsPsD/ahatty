@@ -1,6 +1,11 @@
+import 'dart:convert';
+import 'dart:developer';
+import 'dart:typed_data';
+
 import 'package:chatbot/dio_server.dart';
 import 'package:chatbot/models/chat_message.dart';
 import 'package:chatbot/models/language.dart';
+import 'package:chatbot/models/result.dart';
 import 'package:chatbot/widgets/chat_message_list_item.dart';
 import 'package:flutter/material.dart';
 //import 'package:speech_to_text/speech_to_text.dart';
@@ -9,7 +14,6 @@ import 'package:flutter/material.dart';
 //import 'dart:async';
 //import 'dart:math';
 import 'package:speech_recognition/speech_recognition.dart';
-
 
 
 
@@ -112,15 +116,17 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Future _dialogRequest({String query}) async {
-
-
+  Future<void> _dialogRequest({String query}) async {
     _addMessage(
         name: 'Chatbot',
         text: 'Writing...',
         type: ChatMessageType.received);
 
     final String response = await server.postReq(query);
+    Map<String, dynamic> resultMap = jsonDecode(response);
+    var result = Result.fromJson(resultMap);
+
+
 
     setState(() {
       _messageList.removeAt(0);
@@ -129,9 +135,26 @@ class _HomePageState extends State<HomePage> {
 
     _addMessage(
         name: 'Chatbot',
-        text: response ?? '',
+        text: result.sentence ?? '',
         type: ChatMessageType.received);
-  }
+
+    if(result.spell != null){
+      _addMessage(
+          name: 'Chatbot',
+          text: result.spell[0] ?? '',
+          type: ChatMessageType.received);
+    }
+
+
+    if (result.isChanged) {
+      _addMessage(
+          name: 'Chatbot',
+          text: "oh your good, let's study other chapter" ?? '',
+          type: ChatMessageType.received);
+    }
+    }
+
+
 
 
   void _sendMessage({String text}) {
