@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:typed_data';
-
+import 'dart:core';
 import 'package:chatbot/dio_server.dart';
 import 'package:chatbot/models/chat_message.dart';
 import 'package:chatbot/models/language.dart';
@@ -125,7 +125,7 @@ class _HomePageState extends State<HomePage> {
     final String response = await server.postReq(query);
     Map<String, dynamic> resultMap = jsonDecode(response);
     var result = Result.fromJson(resultMap);
-
+    print(resultMap);
 
 
     setState(() {
@@ -138,20 +138,35 @@ class _HomePageState extends State<HomePage> {
         text: result.sentence ?? '',
         type: ChatMessageType.received);
 
-    if(result.spell != null){
-      _addMessage(
-          name: 'Chatbot',
-          text: result.spell[0] ?? '',
-          type: ChatMessageType.received);
+
+    if(result.spell.isNotEmpty){
+      for (int i=0; i < result.spell.length ;i++){
+        _addMessage(
+            name: 'SpellCheck',
+            text: "Recommend \n"+result.spell[i] ?? '',
+            type: ChatMessageType.received);
+      }
+
     }
 
 
-    if (result.isChanged) {
-      _addMessage(
-          name: 'Chatbot',
-          text: "oh your good, let's study other chapter" ?? '',
-          type: ChatMessageType.received);
-    }
+    if (result.isChanged || result.count ==1 ) {
+
+      if(result.isChanged){
+        _addMessage(
+            name: 'NewContents',
+            text: "Oh! let's talk about other topic\n"+result.contents.toString() ?? '',
+            type: ChatMessageType.received);
+      }
+
+      else {
+        _addMessage(
+            name: 'First Contents',
+            text: result.contents.toString() ?? '',
+            type: ChatMessageType.received);
+      }
+      }
+
     }
 
 
