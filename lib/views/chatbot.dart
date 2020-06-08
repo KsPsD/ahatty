@@ -8,6 +8,7 @@ import 'package:chatbot/models/language.dart';
 import 'package:chatbot/models/result.dart';
 import 'package:chatbot/widgets/chat_message_list_item.dart';
 import 'package:flutter/material.dart';
+
 //import 'package:speech_to_text/speech_to_text.dart';
 //import 'package:speech_to_text/speech_recognition_error.dart';
 //import 'package:speech_to_text/speech_recognition_result.dart';
@@ -16,24 +17,30 @@ import 'package:flutter/material.dart';
 import 'package:speech_recognition/speech_recognition.dart';
 
 
-
 class HomePage extends StatefulWidget {
+  final Map<String,dynamic> chapter;
+  HomePage({Key key, @required  this.chapter}) : super(key: key);
+
   @override
-  _HomePageState createState() => _HomePageState();
+  _HomePageState createState() => new _HomePageState(chapter);
 
 }
 
 
-
 class _HomePageState extends State<HomePage> {
+  Map<String,dynamic> chapter;
+  _HomePageState(this.chapter);
+
   final _messageList = <ChatMessage>[];
   final _controllerText = new TextEditingController();
   SpeechRecognition _speech;
   bool _speechRecognitionAvailable = false;
   bool _isListening = false;
   String transcription = '';
-  //String _currentLocale = 'en_US';
+  String _currentLocale = 'en_US';
   Language selectedLang = languages.first;
+  bool first_flag = true;
+  var answer;
 //  bool _hasSpeech = false;
 //  double level = 0.0;
 //  double minSoundLevel = 50000;
@@ -54,8 +61,13 @@ class _HomePageState extends State<HomePage> {
   @override
   initState() {
     super.initState();
+
     activateSpeechRecognizer();
+
+
   }
+
+
 
   void activateSpeechRecognizer() {
     print('_MyAppState.activateSpeechRecognizer... ');
@@ -90,19 +102,37 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: new AppBar(
-        title: Text('Chatbot - User'),
-      ),
-      body: Column(
-        children: <Widget>[
-          _buildList(),
-          Divider(height: 1.0),
-          _buildUserInput(),
-        ],
-      ),
-    );
-  }
+    if (first_flag){
+          return Scaffold(
+      appBar:  new AppBar(
+      title:  Text(chapter['chapter']) ,
+    ),
+
+            body: Column(
+              children: <Widget>[
+                _buildList(),
+                Divider(height: 1.0),
+                _buildUserInput(),
+              ],
+            ),
+          );
+    }
+    else {
+      return Scaffold(
+        appBar:  new AppBar(
+          title:  Text(answer.chapter) ,
+        ),
+        body: Column(
+          children: <Widget>[
+            _buildList(),
+            Divider(height: 1.0),
+            _buildUserInput(),
+          ],
+        ),
+      );
+
+      }
+    }
 
 
   Widget _buildList() {
@@ -110,7 +140,8 @@ class _HomePageState extends State<HomePage> {
       child: ListView.builder(
         padding: EdgeInsets.all(8.0),
         reverse: true,
-        itemBuilder: (_, int index) => ChatMessageListItem(chatMessage: _messageList[index]),
+        itemBuilder: (_, int index) =>
+            ChatMessageListItem(chatMessage: _messageList[index]),
         itemCount: _messageList.length,
       ),
     );
@@ -124,7 +155,7 @@ class _HomePageState extends State<HomePage> {
 
     final String response = await server.postReq(query);
     Map<String, dynamic> resultMap = jsonDecode(response);
-    var result = Result.fromJson(resultMap);
+    answer = Result.fromJson(resultMap);
     print(resultMap);
 
 
@@ -135,41 +166,41 @@ class _HomePageState extends State<HomePage> {
 
     _addMessage(
         name: 'Chatbot',
-        text: result.sentence ?? '',
+        text: answer.sentence ?? '',
         type: ChatMessageType.received);
 
 
-    if(result.spell.isNotEmpty){
-      for (int i=0; i < result.spell.length ;i++){
+    if (answer.spell.isNotEmpty) {
+      for (int i = 0; i < answer.spell.length; i++) {
         _addMessage(
             name: 'SpellCheck',
-            text: "Recommend \n"+result.spell[i] ?? '',
+            text: "Recommend \n" + answer.spell[i] ?? '',
             type: ChatMessageType.received);
       }
-
     }
 
 
-    if (result.isChanged || result.count ==1 ) {
+    if (answer.isChanged || answer.count == 1) {
+      if (answer.isChanged) {
+        setState(() {
+          first_flag=false;
+        });
 
-      if(result.isChanged){
         _addMessage(
             name: 'NewContents',
-            text: "Oh! let's talk about other topic\n"+result.contents.toString() ?? '',
+            text: "Oh! let's talk about other topic\n" +
+                answer.contents.toString() ?? '',
             type: ChatMessageType.received);
       }
 
       else {
         _addMessage(
             name: 'First Contents',
-            text: result.contents.toString() ?? '',
+            text: answer.chapter ?? '',
             type: ChatMessageType.received);
       }
-      }
-
     }
-
-
+  }
 
 
   void _sendMessage({String text}) {
@@ -206,7 +237,9 @@ class _HomePageState extends State<HomePage> {
     return new Container(
       margin: new EdgeInsets.only(left: 8.0),
       child: new IconButton(
-          icon: new Icon(Icons.send, color: Theme.of(context).accentColor),
+          icon: new Icon(Icons.send, color: Theme
+              .of(context)
+              .accentColor),
           onPressed: () {
             if (_controllerText.text.isNotEmpty) {
               _sendMessage(text: _controllerText.text);
@@ -215,17 +248,26 @@ class _HomePageState extends State<HomePage> {
 
     );
   }
-  Widget _speechButton(){
-    return new Container(
+
+  Widget _speechButton() {
+    return new Container
+    (
         margin: new EdgeInsets.only(right: 8.0),
-        child: new IconButton(
-            icon: new Icon(_isListening ? Icons.mic :Icons.mic_none , color: Theme.of(context).accentColor),
-            onPressed:_speechRecognitionAvailable && !_isListening?
-                () => start(): null)
+    child: new IconButton(
+    icon: new Icon(_isListening ? Icons.mic :Icons.mic_none , color: Theme.of(context).accentColor),
+    onPressed:(){
+    if(_speechRecognitionAvailable && !_isListening){
+    start();}
+    else if(!_speechRecognitionAvailable &&  !_isListening ){
+      start();
+    }
+    }
+    )
+    );
 //    _speechRecognitionAvailable && !_isListening
 //        ? () => start()
 //        : null,
-    );
+
 
   }
 
@@ -242,9 +284,11 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-  void start() => _speech
-      .listen(locale: selectedLang.code)
-      .then((result) => print('_MyAppState.start => result ${result}'));
+
+  void start() =>
+      _speech
+          .listen(locale: selectedLang.code)
+          .then((result) => print('_MyAppState.start => result ${result}'));
 
   void cancel() =>
       _speech.cancel().then((result) => setState(() => _isListening = result));
@@ -263,7 +307,8 @@ class _HomePageState extends State<HomePage> {
 
   void onRecognitionStarted() => setState(() => _isListening = true);
 
-  void onRecognitionResult(String text) => setState(() => _controllerText.text = text);
+  void onRecognitionResult(String text) =>
+      setState(() => _controllerText.text = text);
 
   void onRecognitionComplete() => setState(() => _isListening = false);
 

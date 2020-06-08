@@ -11,8 +11,9 @@ class Result {
   final int count;
   final bool isChanged;
   final List<String> spell;
+  final String chapter;
 
-  Result({this.sentence, this.similarity, this.correct, this.contents, this.count,this.spell ,this.isChanged});
+  Result({this.sentence, this.similarity, this.correct, this.contents, this.count,this.spell ,this.isChanged,this.chapter});
 
   factory Result.fromJson(Map<String, dynamic> json) =>_$ResultFromJson(json);
   Map<String,dynamic>toJson()=>_$ResultToJson(this);

@@ -1,7 +1,11 @@
+import 'dart:io';
+
 import  'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-
+import 'package:chatbot/dio_server.dart';
+import 'dart:convert';
+import 'chatbot.dart';
 class HomeDisplay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -43,9 +47,8 @@ class HomeDisplay extends StatelessWidget {
                         style: TextStyle(color: Colors.white, fontSize: 30),
                       ),
                       color: Colors.deepOrange,
-                      onPressed: (){
-                        print('chatbot으로 이동');
-                        Navigator.pushNamed(context, '/chatbot');
+                      onPressed: () async {
+                        _sendChpater(context);
                       },
                     ),
                     Padding(padding: EdgeInsets.all(8)),
@@ -70,9 +73,23 @@ class HomeDisplay extends StatelessWidget {
   }
 }
 
+void _sendChpater(BuildContext context) async{
+
+  Map<String, dynamic> firstMap;
+  final String first = await server.getReq();
+    firstMap  = jsonDecode(first);
+    print(firstMap);
+  Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => HomePage(chapter: firstMap),
+      ));
+}
+
 
 _launchURL() async {
   const url = 'https://docs.google.com/forms/d/1RQ2Nu7CHQczc3DqEvuUu0haw5itXG5afxwLl19DyjgM/edit';
+
   if (await canLaunch(url)) {
     await launch(url);
   } else {

@@ -15,6 +15,7 @@ Result _$ResultFromJson(Map<String, dynamic> json) {
     count: json['count'] as int,
     spell: (json['spell'] as List)?.map((e) => e as String)?.toList(),
     isChanged: json['isChanged'] as bool,
+    chapter: json['chapter'] as String,
   );
 }
 
@@ -26,4 +27,5 @@ Map<String, dynamic> _$ResultToJson(Result instance) => <String, dynamic>{
       'count': instance.count,
       'isChanged': instance.isChanged,
       'spell': instance.spell,
+      'chapter': instance.chapter,
     };
